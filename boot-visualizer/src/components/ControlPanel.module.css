@@ -1,0 +1,38 @@
+.panel {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: #eee;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.powerBtn {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    text-transform: uppercase;
+    transition: background 0.2s;
+}
+
+.powerBtn:hover {
+    background: #c0392b;
+}
+
+.errorText {
+    color: #c0392b;
+    font-weight: bold;
+}
+
+.statusIndicator {
+    margin-left: auto;
+    font-family: monospace;
+    color: #555;
+}
