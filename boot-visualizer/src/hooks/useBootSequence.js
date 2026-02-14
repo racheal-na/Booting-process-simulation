@@ -52,10 +52,11 @@ export function useBootSequence() {
     const [stage, setStage] = useState(BOOT_STAGES.POWER_OFF);
     const [logs, setLogs] = useState([]);
     const [activeComponent, setActiveComponent] = useState(HARDWARE.NONE);
-    const [currentOperation, setCurrentOperation] = useState('IDLE'); // New detailed operation state
+    const [currentOperation, setCurrentOperation] = useState('IDLE');
     const [error, setError] = useState(null);
-    const [progress, setProgress] = useState(0); // 0 to 100
+    const [progress, setProgress] = useState(0);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [speedMultiplier, setSpeedMultiplier] = useState(1.0); // 1.0 = Normal, >1.0 = Slower, <1.0 = Faster
 
     const timerRef = useRef(null);
 
@@ -95,19 +96,19 @@ export function useBootSequence() {
 
         setTimeout(() => {
             addLog("Hashing password (SHA-256)...");
-        }, 500);
+        }, 500 * speedMultiplier);
 
         setTimeout(() => {
             setCurrentOperation(SYSTEM_OPS.AUTH_CHECK);
             setActiveComponent(HARDWARE.RAM);
             addLog("Reading stored hash from SAM...");
-        }, 1500);
+        }, 1500 * speedMultiplier);
 
         setTimeout(() => {
-            if (password === 'admin') { // Simple hardcoded password for demo
+            if (password === 'admin') {
                 addLog("Password Verified. Access Granted.");
                 setIsLoggedIn(true);
-                setStage(BOOT_STAGES.READY); // Go back to ready but logged in state (or new DESKTOP stage)
+                setStage(BOOT_STAGES.READY);
                 setCurrentOperation(SYSTEM_OPS.IDLE);
                 setActiveComponent(HARDWARE.NONE);
             } else {
@@ -118,30 +119,29 @@ export function useBootSequence() {
                 setActiveComponent(HARDWARE.NONE);
                 setTimeout(() => setError(null), 2000);
             }
-        }, 3000);
+        }, 3000 * speedMultiplier);
     };
 
     useEffect(() => {
+        const getDelay = (baseDelay) => baseDelay * speedMultiplier;
+
         const runStage = () => {
             switch (stage) {
-                case BOOT_STAGES.POWER_ON:
                 case BOOT_STAGES.POWER_ON:
                     setActiveComponent(HARDWARE.CPU);
                     setCurrentOperation(SYSTEM_OPS.BIOS_CHECK);
                     addLog("System Power ON. CPU Reset.");
                     setProgress(10);
-                    timerRef.current = setTimeout(() => setStage(BOOT_STAGES.BIOS), STAGE_DELAYS[BOOT_STAGES.POWER_ON]);
+                    timerRef.current = setTimeout(() => setStage(BOOT_STAGES.BIOS), getDelay(STAGE_DELAYS[BOOT_STAGES.POWER_ON]));
                     break;
 
                 case BOOT_STAGES.BIOS:
-                    setActiveComponent(HARDWARE.CPU); // BIOS runs on CPU
+                    setActiveComponent(HARDWARE.CPU);
                     setCurrentOperation(SYSTEM_OPS.BIOS_CHECK);
                     addLog("BIOS Initializing...");
                     addLog("Checking CPU registers...");
                     setProgress(20);
-                    addLog("Checking CPU registers...");
-                    setProgress(20);
-                    timerRef.current = setTimeout(() => setStage(BOOT_STAGES.VGA_INIT), STAGE_DELAYS[BOOT_STAGES.BIOS]);
+                    timerRef.current = setTimeout(() => setStage(BOOT_STAGES.VGA_INIT), getDelay(STAGE_DELAYS[BOOT_STAGES.BIOS]));
                     break;
 
                 case BOOT_STAGES.VGA_INIT:
@@ -150,9 +150,9 @@ export function useBootSequence() {
                     addLog("Initializing Video Adapter (VGA BIOS)...");
                     setProgress(25);
                     timerRef.current = setTimeout(() => {
-                        addLog("Video Output Enagled.");
+                        addLog("Video Output Enabled.");
                         setStage(BOOT_STAGES.POST);
-                    }, STAGE_DELAYS[BOOT_STAGES.VGA_INIT]);
+                    }, getDelay(STAGE_DELAYS[BOOT_STAGES.VGA_INIT]));
                     break;
 
                 case BOOT_STAGES.POST:
@@ -161,8 +161,6 @@ export function useBootSequence() {
                     addLog("POST: Checking Memory (RAM)...");
                     setProgress(30);
 
-                    // Simulate random failure (10% chance)
-                    // For now, let's keep it successful mostly, maybe add a toggle later
                     const isFailure = Math.random() < 0.1;
 
                     timerRef.current = setTimeout(() => {
@@ -177,7 +175,7 @@ export function useBootSequence() {
                             addLog("POST: Checking Peripherals...");
                             setStage(BOOT_STAGES.BOOT_DEVICE_DETECT);
                         }
-                    }, STAGE_DELAYS[BOOT_STAGES.POST]);
+                    }, getDelay(STAGE_DELAYS[BOOT_STAGES.POST]));
                     break;
 
                 case BOOT_STAGES.BOOT_DEVICE_DETECT:
@@ -188,22 +186,22 @@ export function useBootSequence() {
                     timerRef.current = setTimeout(() => {
                         addLog("Boot device found: Virtual SSD (512GB).");
                         setStage(BOOT_STAGES.BOOTLOADER);
-                    }, STAGE_DELAYS[BOOT_STAGES.BOOT_DEVICE_DETECT]);
+                    }, getDelay(STAGE_DELAYS[BOOT_STAGES.BOOT_DEVICE_DETECT]));
                     break;
 
                 case BOOT_STAGES.BOOTLOADER:
-                    setActiveComponent(HARDWARE.RAM); // Loading into RAM
+                    setActiveComponent(HARDWARE.RAM);
                     setCurrentOperation(SYSTEM_OPS.KERNEL_LOAD);
                     addLog("Loading Bootloader...");
                     setProgress(65);
                     timerRef.current = setTimeout(() => {
                         addLog("GRUB Loading kernel...");
                         setStage(BOOT_STAGES.OS_INIT);
-                    }, STAGE_DELAYS[BOOT_STAGES.BOOTLOADER]);
+                    }, getDelay(STAGE_DELAYS[BOOT_STAGES.BOOTLOADER]));
                     break;
 
                 case BOOT_STAGES.OS_INIT:
-                    setActiveComponent(HARDWARE.CPU); // heavy processing
+                    setActiveComponent(HARDWARE.CPU);
                     setCurrentOperation(SYSTEM_OPS.KERNEL_LOAD);
                     addLog("Initializing Operating System...");
                     addLog("Loading drivers...");
@@ -212,10 +210,9 @@ export function useBootSequence() {
                         addLog("System Services started.");
                         setStage(BOOT_STAGES.READY);
                         setProgress(100);
-                    }, STAGE_DELAYS[BOOT_STAGES.OS_INIT]);
+                    }, getDelay(STAGE_DELAYS[BOOT_STAGES.OS_INIT]));
                     break;
 
-                case BOOT_STAGES.READY:
                 case BOOT_STAGES.READY:
                     setActiveComponent(HARDWARE.NONE);
                     setCurrentOperation(SYSTEM_OPS.IDLE);
@@ -226,7 +223,6 @@ export function useBootSequence() {
 
                 case BOOT_STAGES.FAILURE:
                     setActiveComponent(HARDWARE.NONE);
-                    // Stay in failure until reset
                     break;
 
                 default:
@@ -239,7 +235,7 @@ export function useBootSequence() {
         }
 
         return () => clearTimeout(timerRef.current);
-    }, [stage]);
+    }, [stage]); // Note: speedMultiplier is captured at effect start. Changes apply to NEXT stage.
 
     return {
         stage,
@@ -249,6 +245,8 @@ export function useBootSequence() {
         progress,
         currentOperation,
         isLoggedIn,
+        speedMultiplier,
+        setSpeedMultiplier,
         login,
         startBoot,
         shutdown

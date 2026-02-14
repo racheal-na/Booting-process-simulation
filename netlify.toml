@@ -1,4 +1,4 @@
 [build]
   base = "boot-visualizer"
-  publish = "boot-visualizer/out"
+  publish = "out"
   command = "npm run build"

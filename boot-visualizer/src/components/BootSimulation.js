@@ -6,13 +6,32 @@ import StageDisplay from './StageDisplay';
 import ControlPanel from './ControlPanel';
 
 export default function BootSimulation() {
-    const { stage, logs, activeComponent, error, progress, currentOperation, isLoggedIn, login, startBoot, shutdown } = useBootSequence();
+    const {
+        stage,
+        logs,
+        activeComponent,
+        error,
+        progress,
+        currentOperation,
+        isLoggedIn,
+        speedMultiplier,
+        setSpeedMultiplier,
+        login,
+        startBoot,
+        shutdown
+    } = useBootSequence();
 
     return (
         <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '20px' }}>
             <h1>Boot Process Visualizer</h1>
 
-            <ControlPanel startBoot={startBoot} shutdown={shutdown} stage={stage} />
+            <ControlPanel
+                startBoot={startBoot}
+                shutdown={shutdown}
+                stage={stage}
+                speedMultiplier={speedMultiplier}
+                setSpeedMultiplier={setSpeedMultiplier}
+            />
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                 <div>

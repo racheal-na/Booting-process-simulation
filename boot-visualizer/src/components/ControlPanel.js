@@ -1,7 +1,7 @@
 import styles from './ControlPanel.module.css';
 import { BOOT_STAGES } from '../hooks/useBootSequence';
 
-export default function ControlPanel({ startBoot, shutdown, stage }) {
+export default function ControlPanel({ startBoot, shutdown, stage, speedMultiplier, setSpeedMultiplier }) {
     const isPowered = stage !== BOOT_STAGES.POWER_OFF && stage !== BOOT_STAGES.FAILURE;
 
     return (
@@ -12,6 +12,24 @@ export default function ControlPanel({ startBoot, shutdown, stage }) {
             >
                 {isPowered ? 'Power OFF' : 'Power ON'}
             </button>
+
+            <div className={styles.controls}>
+                <label className={styles.label}>
+                    Boot Speed: {speedMultiplier}x
+                    <input
+                        type="range"
+                        min="0.5"
+                        max="5.0"
+                        step="0.5"
+                        value={speedMultiplier}
+                        onChange={(e) => setSpeedMultiplier(parseFloat(e.target.value))}
+                        className={styles.slider}
+                    />
+                </label>
+                <span style={{ fontSize: '0.8rem', color: '#aaa', marginLeft: '5px' }}>
+                    (Higher = Slower)
+                </span>
+            </div>
 
             {stage === BOOT_STAGES.FAILURE && (
                 <span className={styles.errorText}>System Halted. Please Restart.</span>
