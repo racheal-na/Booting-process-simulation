@@ -2,64 +2,97 @@
     display: flex;
     align-items: center;
     gap: 20px;
-    background: #eee;
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 20px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
     flex-wrap: wrap;
-    /* Allow wrapping on small screens */
+    color: white;
 }
 
 .powerBtn {
-    background: #e74c3c;
+    background: linear-gradient(135deg, #ff416c, #ff4b2b);
     color: white;
     border: none;
-    padding: 10px 20px;
+    padding: 12px 24px;
     font-size: 16px;
-    border-radius: 4px;
+    border-radius: 50px;
     cursor: pointer;
-    font-weight: bold;
+    font-weight: 600;
     text-transform: uppercase;
-    transition: background 0.2s;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 4px 15px rgba(255, 75, 43, 0.4);
 }
 
 .powerBtn:hover {
-    background: #c0392b;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 75, 43, 0.6);
 }
 
 .controls {
     display: flex;
     align-items: center;
-    gap: 10px;
-    background: #ddd;
-    padding: 5px 15px;
-    border-radius: 20px;
+    gap: 15px;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 10px 20px;
+    border-radius: 50px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .label {
-    font-family: monospace;
-    font-weight: bold;
+    font-family: 'Segoe UI', sans-serif;
+    font-weight: 500;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 15px;
+    font-size: 0.9rem;
 }
 
 .slider {
     cursor: pointer;
+    appearance: none;
+    width: 150px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 5px;
+    outline: none;
+}
+
+.slider::-webkit-slider-thumb {
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    background: white;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
 }
 
 .errorText {
-    color: #c0392b;
+    color: #ff4b2b;
     font-weight: bold;
+    text-shadow: 0 0 10px rgba(255, 75, 43, 0.5);
 }
 
 .statusIndicator {
     margin-left: auto;
-    font-family: monospace;
-    color: #555;
-    background: #fff;
-    padding: 5px 10px;
-    border-radius: 4px;
-    border: 1px solid #ccc;
+    font-family: 'Courier New', monospace;
+    color: #00adef;
+    background: rgba(0, 173, 239, 0.1);
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 173, 239, 0.3);
+    font-size: 0.9rem;
+    letter-spacing: 1px;
 }

@@ -38,10 +38,10 @@ export default function BootSimulation() {
                     <h3>Hardware Monitor</h3>
                     <MotherboardDiagram activeComponent={activeComponent} currentOperation={currentOperation} />
 
-                    <div style={{ marginTop: '20px', background: '#f5f5f5', padding: '10px', borderRadius: '5px', maxHeight: '200px', overflowY: 'auto', border: '1px solid #ddd' }}>
-                        <h4>System Log</h4>
-                        <ul style={{ listStyle: 'none', padding: 0, fontSize: '14px', fontFamily: 'monospace' }}>
-                            {logs.map((log, i) => <li key={i}>{log}</li>)}
+                    <div style={{ marginTop: '20px', background: 'rgba(0, 0, 0, 0.6)', padding: '10px', borderRadius: '5px', maxHeight: '200px', overflowY: 'auto', border: '1px solid #444', color: '#ccc' }}>
+                        <h4 style={{ margin: '0 0 10px 0', color: '#fff' }}>System Log</h4>
+                        <ul style={{ listStyle: 'none', padding: 0, fontSize: '13px', fontFamily: 'Consolas, monospace' }}>
+                            {logs.map((log, i) => <li key={i} style={{ borderBottom: '1px solid #333', padding: '2px 0' }}>{log}</li>)}
                         </ul>
                     </div>
                 </div>

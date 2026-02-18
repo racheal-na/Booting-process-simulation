@@ -48,6 +48,61 @@ const SYSTEM_OPS = {
     AUTH_CHECK: 'CMP HASH, STORED_HASH',
 };
 
+const KERNEL_LOGS = [
+    "[    0.000000] Linux version 6.5.0-generic (buildd@lcy02-amd64-001) (gcc version 12.2.0)",
+    "[    0.000000] Command line: BOOT_IMAGE=/vmlinuz-6.5.0-generic root=/dev/mapper/vg0-root ro quiet splash",
+    "[    0.004000] x86/fpu: Supporting XSAVE feature 0x001: 'x87 floating point registers'",
+    "[    0.004000] x86/fpu: Supporting XSAVE feature 0x002: 'SSE registers'",
+    "[    0.004000] x86/fpu: Enabled xstate features 0x2e7, context size is 2440 bytes, using 'compacted' format.",
+    "[    0.006000] BIOS-e820: [mem 0x0000000000000000-0x000000000009fbff] usable",
+    "[    0.006000] BIOS-e820: [mem 0x000000000009fc00-0x000000000009ffff] reserved",
+    "[    0.012000] Console: colour VGA+ 80x25",
+    "[    0.012000] console [tty0] enabled",
+    "[    0.014000] ACPI: Core revision 20221020",
+    "[    0.020000] APIC: Switch to symmetric I/O mode setup",
+    "[    0.150000] Freeing SMP alternatives memory: 36K",
+    "[    0.160000] smpboot: CPU0: Intel(R) Core(TM) i7-8550U CPU @ 1.80GHz (family: 0x6, model: 0x8e, stepping: 0xa)",
+    "[    0.200000] Performance Events: PEBS fmt4+, IvyBridge events, 32-deep LBR, full-width counters, Intel PMU driver.",
+    "[    0.250000] NMI watchdog: Enabled. Permanently consumes one hw-PMU counter.",
+    "[    0.300000] smp: Bringing up secondary CPUs ...",
+    "[    0.310000] x86: Booting SMP configuration:",
+    "[    0.320000] .... node  #0, CPUs:      #1 #2 #3",
+    "[    0.400000] smp: Brought up 1 node, 4 CPUs",
+    "[    0.450000] TCP: Hash tables configured (established 262144 bind 65536)",
+    "[    0.500000] PCI: Using ACPI for IRQ routing",
+    "[    0.550000] PCI: pci_cache_line_size set to 64 bytes",
+    "[    0.600000] e1000e 0000:00:1f.6 eth0: (PCI Express:2.5GT/s:Width x1) 00:0c:29:4b:65:43",
+    "[    0.650000] e1000e 0000:00:1f.6 eth0: Intel(R) PRO/1000 Network Connection",
+    "[    0.660000] e1000e 0000:00:1f.6 eth0: MAC: 12, PHY: 12, PBA: No",
+    "[    0.700000] input: AT Translated Set 2 keyboard as /devices/platform/i8042/serio0/input/input0",
+    "[    0.750000] rtc_cmos 00:01: RTC can wake from S4",
+    "[    0.800000] usb 1-1: new high-speed USB device number 2 using xhci_hcd",
+    "[    0.900000] hub 1-1:1.0: USB hub found",
+    "[    1.000000] EXT4-fs (dm-0): mounted filesystem with ordered data mode. Opts: (null)",
+    "[    1.100000] systemd[1]: Inserted module 'autofs4'",
+    "[    1.200000] systemd[1]: Detected architecture x86-64.",
+    "[  OK  ] Started Dispatch Password Requests to Console Directory Watch.",
+    "[  OK  ] Reached target Local Encrypted Volumes.",
+    "[  OK  ] Reached target Paths.",
+    "[  OK  ] Reached target Remote File Systems.",
+    "[  OK  ] Reached target Slices.",
+    "[  OK  ] Reached target Swap.",
+    "[  OK  ] Listening on Journal Socket.",
+    "[  OK  ] Listening on udev Control Socket.",
+    "[  OK  ] Listening on udev Kernel Socket.",
+    "[  OK  ] Mounted Huge Pages File System.",
+    "[  OK  ] Mounted POSIX Message Queue File System.",
+    "[  OK  ] Mounted Kernel Debug File System.",
+    "[  OK  ] Started Remount Root and Kernel File Systems.",
+    "[  OK  ] Started Apply Kernel Variables.",
+    "[  OK  ] Started Create Static Device Nodes in /dev.",
+    "[  OK  ] Started udev Kernel Device Manager.",
+    "[  OK  ] Started Network Service.",
+    "[  OK  ] Reached target Network.",
+    "[  OK  ] Started Network Time Synchronization.",
+    "[  OK  ] Reached target System Time Synchronized.",
+];
+
 export function useBootSequence() {
     const [stage, setStage] = useState(BOOT_STAGES.POWER_OFF);
     const [logs, setLogs] = useState([]);
@@ -158,24 +213,39 @@ export function useBootSequence() {
                 case BOOT_STAGES.POST:
                     setActiveComponent(HARDWARE.RAM);
                     setCurrentOperation(SYSTEM_OPS.RAM_CHECK);
-                    addLog("POST: Checking Memory (RAM)...");
-                    setProgress(30);
+                    
+                    const POST_LOGS = [
+                        "AMIBIOS(C)2026 American Megatrends, Inc.",
+                        "ASUS PRIME Z790-P ACPI BIOS Revision 1604",
+                        "CPU: Intel(R) Core(TM) i9-13900K CPU @ 3.00GHz",
+                        "Speed: 3000MHz",
+                        "DRAM Clock: 6000MHz",
+                        "USB Devices total: 0 Drive, 1 Keyboard, 1 Mouse, 0 Hub",
+                        "Detected ATA/ATAPI Devices...",
+                        "SATA Port 1: Samsung SSD 980 PRO 1TB",
+                        "SATA Port 2: Empty"
+                    ];
 
-                    const isFailure = Math.random() < 0.1;
+                    let postLogIndex = 0;
+                    const postInterval = 400; // Slower than kernel logs for readability
 
-                    timerRef.current = setTimeout(() => {
-                        if (isFailure) {
-                            setStage(BOOT_STAGES.FAILURE);
-                            setError("POST Error: Memory Check Failed!");
-                            addLog("ERROR: POST Failure detected.");
-                            playErrorBeep();
-                        } else {
-                            addLog("POST: Memory OK.");
-                            playPostBeep();
-                            addLog("POST: Checking Peripherals...");
-                            setStage(BOOT_STAGES.BOOT_DEVICE_DETECT);
-                        }
-                    }, getDelay(STAGE_DELAYS[BOOT_STAGES.POST]));
+                    const pushPostLog = () => {
+                         if (postLogIndex < POST_LOGS.length) {
+                             addLog(POST_LOGS[postLogIndex]);
+                             setProgress(30 + Math.floor((postLogIndex / POST_LOGS.length) * 20));
+                             postLogIndex++;
+                             
+                             // Play beep on first log to simulate POST beep
+                             if (postLogIndex === 1) playPostBeep();
+
+                             timerRef.current = setTimeout(pushPostLog, postInterval * speedMultiplier);
+                         } else {
+                             addLog("POST: System Healthy.");
+                             setStage(BOOT_STAGES.BOOT_DEVICE_DETECT);
+                         }
+                    };
+                    
+                    pushPostLog();
                     break;
 
                 case BOOT_STAGES.BOOT_DEVICE_DETECT:
@@ -203,14 +273,27 @@ export function useBootSequence() {
                 case BOOT_STAGES.OS_INIT:
                     setActiveComponent(HARDWARE.CPU);
                     setCurrentOperation(SYSTEM_OPS.KERNEL_LOAD);
-                    addLog("Initializing Operating System...");
-                    addLog("Loading drivers...");
-                    setProgress(85);
-                    timerRef.current = setTimeout(() => {
-                        addLog("System Services started.");
-                        setStage(BOOT_STAGES.READY);
-                        setProgress(100);
-                    }, getDelay(STAGE_DELAYS[BOOT_STAGES.OS_INIT]));
+                    // Clear previous logs for fresh kernel boot look
+                    setLogs([]);
+
+                    let logIndex = 0;
+                    const totalLogs = KERNEL_LOGS.length;
+                    const baseInterval = 100; // ms per log, adjusting this changes speed
+
+                    const pushLog = () => {
+                        if (logIndex < totalLogs) {
+                            addLog(KERNEL_LOGS[logIndex]);
+                            setProgress(70 + Math.floor((logIndex / totalLogs) * 30));
+                            logIndex++;
+                            timerRef.current = setTimeout(pushLog, baseInterval * speedMultiplier);
+                        } else {
+                            addLog("System Services started.");
+                            setStage(BOOT_STAGES.READY);
+                            setProgress(100);
+                        }
+                    };
+
+                    pushLog();
                     break;
 
                 case BOOT_STAGES.READY:
